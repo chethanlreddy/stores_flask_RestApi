@@ -2,6 +2,7 @@ from flask import Flask
 from flask_smorest import Api
 from resources.items import blp as ItemBluePrint
 from resources.stores import blp as StoreBluePrint
+from resources.tags import blp as tagBluePrint
 import models
 import os
 from db import db
@@ -39,6 +40,7 @@ def create_app(db_url = None):
 
     api.register_blueprint(ItemBluePrint)
     api.register_blueprint(StoreBluePrint)
+    api.register_blueprint(tagBluePrint)
 
 
     return app

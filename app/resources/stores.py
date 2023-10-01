@@ -24,20 +24,34 @@ class Store(MethodView):
 
     def delete(self, store_id):
         store = StoreTable.query.get_or_404(store_id)
-        raise NotImplementedError('Deleting store is not implemented')
+        if not store:
+            abort(404, message = f'Store with {store_id} not found')
+        db.session.delete(store)
+        db.session.commit()
+        return {'message':'store deleted'}, 204
     
     @blp.arguments(StoreUpdate)
     @blp.response(200, StoreInSchema)
     def put(self, store_data, store_id):
-        store = StoreTable.query.get_or_404(store_id)
-        raise NotImplementedError('updating store is not implemented')
+        store = StoreTable.query.get(store_id)
+        if store:
+            store.name = store_data['name']
+        else:
+            abort(404, message = f'Store with {store_id} not found')
+        try:
+            db.session.add(store)
+            db.session.commit()
+        except SQLAlchemyError:
+            abort(404, message = 'error while updateing to database')
+        return store
 
 @blp.route('/stores')
 class StoreList(MethodView):
 
     @blp.response(200, StoreInSchema(many=True))
     def get(self):
-        return stores.values()
+        stores = StoreTable.query.all()
+        return stores
     
 
     @blp.arguments(StoreInSchema)
@@ -52,4 +66,4 @@ class StoreList(MethodView):
         except SQLAlchemyError:
             abort(404, message = 'error while inserting to database')
 
-        return store, 2
+        return store
